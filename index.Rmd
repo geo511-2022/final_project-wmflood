@@ -7,8 +7,7 @@ date: Fall 2022 Semester
 # Introduction
 
 [~ 200 words]
-
-Clearly stated background and questions / hypotheses / problems being addressed. Sets up the analysis in an interesting and compelling way.
+The problem being addressed in this project is looking at the different ecosystems in the Greater Cape Floristic Region and how the reflectance is affected by wild fires. This will be done by comparing the variety of ecosystems to a time since fire layer and hyperspectral satellite data to collect the reflectance data. Background information   
 
 # Materials and methods
 
@@ -16,60 +15,26 @@ Clearly stated background and questions / hypotheses / problems being addressed.
 
 Narrative: Clear narrative description of the data sources and methods. Includes data from at least two sources that were integrated / merged in R.
 
-Code: The code associated with the project is well organized and easy to follow. Demonstrates mastery of R graphics and functions.
-
 Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. If you want to use your own data, you must make it available on a website (e.g. Figshare) so that others are able to re-run your code.
 
-You can do bullets like this:
+These are the libraries that were used in this project. (need to edit this)
+```{r message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(raster)
+library(rgdal)
+library(plyr)
+library(rhdf5)
+library(hsdar)
+library(piggyback)
+```
 
-* The first most important thing
-* The second most important thing
-* The third most important thing
-
-You can do numbers like this:
-
-1. The first most important thing
-2. The second most important thing
-3. The third most important thing
-
-See [http://rmarkdown.rstudio.com/](http://rmarkdown.rstudio.com/) for all the amazing things you can do.
-
-
-Here's my first code chunk.
+These are the datasets that were used for this project.
 ```{r}
-1+2
+
 ```
 
-Load any required packages in a code chunk (you may need to install some packages):
-
-```{r, message=F, warning=F}
-library(tidyverse)
-library(leaflet)
-library(kableExtra)
-knitr::opts_chunk$set(cache=TRUE)  # cache the results for quick compiling
-```
-
-## Download and clean all required data
-```{r}
-n=20
-data=data.frame(x=runif(n,-180,180),
-                y=runif(n,-60,60),
-                size = runif(n, 5, 20),
-                category = factor(
-                  sample(letters[1:5], n, replace = TRUE)
-                  ),
-                value = rnorm(n))
-```
-
-```{r, results='asis'}
-data %>% 
-  slice(1:10) %>% #show only 1:n rows
-  kable(digits=2,align="c")%>% #make table and round to two digits
-  kable_styling(bootstrap_options = 
-                  c("striped", "hover", "condensed", "responsive")) #apply other formatting
-```
-
-Add any additional processing steps here.
+Code:
 
 # Results
 
