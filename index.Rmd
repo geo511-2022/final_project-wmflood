@@ -23,7 +23,6 @@ library(plyr)
 library(hsdar)
 library(piggyback)
 library(prismaread)
-library(rfigshare)
 library(sf)
 ```
 
@@ -58,10 +57,16 @@ unzip(l2d_zip_path, exdir = "data")
 idx_out_dir <- file.path(tempdir(), "prismaread/indices")
 dir.create(dirname(idx_out_dir))
 pr_convert(
-  in_file = "data/_MACOSX/._PRS_L2D_STD_20220122090206_20220122090210_0001.he5",
+  in_file = "data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5",
+  out_format = "GTiff",
   out_folder = idx_out_dir,
-  indexes = c("NDVI")
+  indexes = c("NDVI"),
+  LATLON = TRUE
 )
+```
+Testing environment for using the data
+```{r}
+
 ```
 Preparing the other datasets for analysis
 ```{r}
