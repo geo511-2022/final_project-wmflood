@@ -46,9 +46,24 @@ vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp")
 ```
 This is the PRISMA satellite data used in this project.
 ```{r}
+piggyback::pb_download(
+  "PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip",
+  repo = "geo511-2022/final_project-wmflood",
+  tag = "PRISMA",
+  dest = "data")
 
+l2d_zip_path <- file.path("data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip")
+unzip(l2d_zip_path, exdir = "data")
+
+idx_out_dir <- file.path(tempdir(), "prismaread/indices")
+dir.create(dirname(idx_out_dir))
+pr_convert(
+  in_file = "data/_MACOSX/._PRS_L2D_STD_20220122090206_20220122090210_0001.he5",
+  out_folder = idx_out_dir,
+  indexes = c("NDVI")
+)
 ```
-
+Preparing the other datasets for analysis
 ```{r}
 #Converting vegmap to an sp object
 vegmap_sp = as(vegmap, "Spatial")
