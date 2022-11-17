@@ -6,15 +6,15 @@ date: Fall 2022 Semester
 
 # Introduction
 
-The problem being addressed in this project is looking at the different ecosystems in the Greater Cape Floristic Region and how the reflectance is affected by wild fires. This will be done by comparing the variety of ecosystems to a time since fire layer and hyperspectral satellite data to collect the reflectance data. Background information   
+The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the reflectance is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral reflectance data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's reflectance changes due to a change in the composition of the ecosystem. Background information   
 
 # Materials and methods
 
-Narrative: Clear narrative description of the data sources and methods. Includes data from at least two sources that were integrated / merged in R. 
-The data being used for this project come from a variety of sources. The hyperspectral data comes from the PRISMA Satellite. It captures the Greater Cape Floristic Region on 2022/01/22. The time since fore data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
+Narrative: Clear narrative description of the data sources and methods. 
+The data being used for this project come from a variety of sources. The hyperspectral data comes from the PRISMA Satellite. It captures the Greater Cape Floristic Region on 2022/01/22. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
 
 These are the libraries that were used in this project. (need to edit this)
-```{r message=FALSE}
+```{r warning=FALSE, message=FALSE}
 library(ggplot2)
 library(dplyr)
 library(raster)
@@ -25,9 +25,9 @@ library(piggyback)
 library(prismaread)
 ```
 
-Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. If you want to use your own data, you must make it available on a website (e.g. Figshare) so that others are able to re-run your code.
+Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. 
 These are the datasets that were used for this project.
-```{r}
+```{r message=FALSE}
 dir.create("data", showWarnings = F)
 piggyback::pb_download(
   "2022_01_17.tif",
@@ -38,7 +38,10 @@ days_fire = raster("data/2022_01_17.tif")
 
 ```
 
-Code:
+These are the methods used in this project:
+```{r}
+
+```
 
 # Results
 
@@ -47,11 +50,6 @@ Code:
 Tables and figures (maps and other graphics) are carefully planned to convey the results of your analysis. Intense exploration and evidence of many trials and failures. The author looked at the data in many different ways before coming to the final presentation of the data.
 
 Show tables, plots, etc. and describe them.
-
-```{r}
-
-```
-
 
 ```{r}
 
