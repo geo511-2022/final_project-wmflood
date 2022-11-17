@@ -23,10 +23,12 @@ library(plyr)
 library(hsdar)
 library(piggyback)
 library(prismaread)
+library(rfigshare)
+library(sf)
 ```
 
 Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. 
-These are the datasets that were used for this project.
+These are the days since fire and vegetation map datasets that were used for this project.
 ```{r message=FALSE}
 dir.create("data", showWarnings = F)
 piggyback::pb_download(
@@ -35,6 +37,26 @@ piggyback::pb_download(
   tag = "processed_ndvi_relative_days_since_fire",
   dest = "data")
 days_fire = raster("data/2022_01_17.tif")
+
+piggyback::pb_download(
+  repo = "geo511-2022/final_project-wmflood",
+  tag = "VEGMAP",
+  dest = "data")
+vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp")
+```
+This is the PRISMA satellite data used in this project.
+```{r}
+
+```
+
+```{r}
+#Converting vegmap to an sp object
+vegmap_sp = as(vegmap, "Spatial")
+
+#Converting to the same Coordinate Reference System
+days_fire_proj = projectRaster(days_fire, crs = crs(vegmap_sp))
+
+#Cropping the datasets to the study area
 
 ```
 
