@@ -6,11 +6,10 @@ date: Fall 2022 Semester
 
 # Introduction
 
-The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the reflectance is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral reflectance data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's reflectance changes due to a change in the composition of the ecosystem. Background information   
+The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the reflectance is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral reflectance data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's reflectance changes due to a change in the composition of the ecosystem. (Need to bulk this section up to get to 200 words)  
 
 # Materials and methods
 
-Narrative: Clear narrative description of the data sources and methods. 
 The data being used for this project come from a variety of sources. The hyperspectral data comes from the PRISMA Satellite. It captures the Greater Cape Floristic Region on 2022/01/22. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
 
 These are the libraries that were used in this project. (need to edit this)
@@ -25,10 +24,8 @@ library(piggyback)
 library(prismaread)
 library(sf)
 ```
-
-Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. 
-These are the days since fire and vegetation map datasets that were used for this project.
-```{r message=FALSE}
+These are the days since fire and vegetation map data sets that were used for this project.
+```{r message=FALSE, warning=FALSE}
 dir.create("data", showWarnings = F)
 piggyback::pb_download(
   "2022_01_17.tif",
@@ -44,7 +41,7 @@ piggyback::pb_download(
 vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp")
 ```
 This is the PRISMA satellite data used in this project.
-```{r}
+```{r message=FALSE, warning=FALSE}
 piggyback::pb_download(
   "PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip",
   repo = "geo511-2022/final_project-wmflood",
@@ -64,25 +61,35 @@ pr_convert(
   LATLON = TRUE
 )
 ```
-Testing environment for using the data
+Reading the PRISMA data. This step is reading the NDVI for the project.
 ```{r}
-
+idx_out_NDVI <- raster("/var/folders/lm/qt6s6j4n48d29fls8cncbnlc0000gn/T//RtmpAcFvuB/prismaread/indices/PRS_L2D_STD_20220122090206_20220122090210_0001_NDVI.tif")
 ```
-Preparing the other datasets for analysis
+Converting the days_fire data to the same crs as the idx_out_NDVI and cropping it to the same area.
 ```{r}
+#Converting the days_fire data to the same Coordinate Reference System
+days_fire_proj = projectRaster(days_fire, crs = crs(idx_out_NDVI))
+
+#Creating an extent to crop to. This is the extent of the idx_out_NDVI data set since it is the smallest data set.
+e = extent(idx_out_NDVI)
+
+#Cropping the vegmap_proj and the days_fire_proj
+fire_crop = crop(days_fire_proj, e)
+```
+Reprojecting the vegmap data set to match the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent. Finally, converting it to an sp object to be better used with the raster objects.
+```{r warning=FALSE}
+#Reprojecting the vegmap data
+vegmap_proj = st_transform(vegmap, crs = crs(idx_out_NDVI))
+
+#Cropping the vegmap data to the study area
+vegmap_crop = st_crop(vegmap_proj, e)
+
 #Converting vegmap to an sp object
-vegmap_sp = as(vegmap, "Spatial")
-
-#Converting to the same Coordinate Reference System
-days_fire_proj = projectRaster(days_fire, crs = crs(vegmap_sp))
-
-#Cropping the datasets to the study area
-
+vegmap_sp = as(vegmap_crop, "Spatial")
 ```
-
-These are the methods used in this project:
+Test for extracting the data
 ```{r}
-
+ext1 = pr_extract_spectra(idx_out_dir, vegmap_crop, id_field = "field_id")
 ```
 
 # Results
