@@ -19,7 +19,6 @@ library(dplyr)
 library(raster)
 library(rgdal)
 library(plyr)
-library(hsdar)
 library(piggyback)
 library(prismaread)
 library(sf)
@@ -57,21 +56,24 @@ pr_convert(
   in_file = "data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5",
   out_format = "GTiff",
   out_folder = idx_out_dir,
-  indexes = c("NDVI"),
-  LATLON = TRUE
+  indexes = "hNDVI",
+  overwrite = TRUE
 )
+
 ```
-Reading the PRISMA data. This step is reading the NDVI for the project.
+Reading the PRISMA data. This step is reading the hyperspectral NDVI for the project.
 ```{r}
-idx_out_NDVI <- raster("/var/folders/lm/qt6s6j4n48d29fls8cncbnlc0000gn/T//RtmpAcFvuB/prismaread/indices/PRS_L2D_STD_20220122090206_20220122090210_0001_NDVI.tif")
+file_var = list.files(idx_out_dir, full.names = TRUE)
+
+idx_hNDVI <- raster::raster(file_var[2]) 
 ```
-Converting the days_fire data to the same crs as the idx_out_NDVI and cropping it to the same area.
+Converting the days_fire data to the same crs as the idx_hNDVI and cropping it to the same area.
 ```{r}
 #Converting the days_fire data to the same Coordinate Reference System
-days_fire_proj = projectRaster(days_fire, crs = crs(idx_out_NDVI))
+days_fire_proj = projectRaster(days_fire, crs = crs(idx_hNDVI))
 
 #Creating an extent to crop to. This is the extent of the idx_out_NDVI data set since it is the smallest data set.
-e = extent(idx_out_NDVI)
+e = extent(idx_hNDVI)
 
 #Cropping the vegmap_proj and the days_fire_proj
 fire_crop = crop(days_fire_proj, e)
@@ -79,7 +81,7 @@ fire_crop = crop(days_fire_proj, e)
 Reprojecting the vegmap data set to match the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent. Finally, converting it to an sp object to be better used with the raster objects.
 ```{r warning=FALSE}
 #Reprojecting the vegmap data
-vegmap_proj = st_transform(vegmap, crs = crs(idx_out_NDVI))
+vegmap_proj = st_transform(vegmap, crs = crs(idx_hNDVI))
 
 #Cropping the vegmap data to the study area
 vegmap_crop = st_crop(vegmap_proj, e)
@@ -89,7 +91,7 @@ vegmap_sp = as(vegmap_crop, "Spatial")
 ```
 Test for extracting the data
 ```{r}
-ext1 = pr_extract_spectra(idx_out_dir, vegmap_crop, id_field = "field_id")
+ext1 = pr_extract_spectra(file_var[2], vegmap_crop, id_field = "field_id")
 ```
 
 # Results
