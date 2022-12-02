@@ -22,6 +22,7 @@ library(plyr)
 library(piggyback)
 library(prismaread)
 library(sf)
+library(mapview)
 ```
 These are the days since fire and vegetation map data sets that were used for this project.
 ```{r message=FALSE, warning=FALSE}
@@ -47,10 +48,10 @@ piggyback::pb_download(
   tag = "PRISMA",
   dest = "data")
 
-l2d_zip_path <- file.path("data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip")
+l2d_zip_path = file.path("data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip")
 unzip(l2d_zip_path, exdir = "data")
 
-idx_out_dir <- file.path(tempdir(), "prismaread/indices")
+idx_out_dir = file.path(tempdir(), "prismaread/indices")
 dir.create(dirname(idx_out_dir))
 pr_convert(
   in_file = "data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5",
@@ -65,18 +66,26 @@ Reading the PRISMA data. This step is reading the hyperspectral NDVI for the pro
 ```{r}
 file_var = list.files(idx_out_dir, full.names = TRUE)
 
-idx_hNDVI <- raster::raster(file_var[2]) 
+idx_hNDVI = raster::raster(file_var[2]) 
+```
+Map of the Hyperspectral NDVI.
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+mapview(idx_hNDVI, maxpixels = 154295)
 ```
 Converting the days_fire data to the same crs as the idx_hNDVI and cropping it to the same area.
 ```{r}
 #Converting the days_fire data to the same Coordinate Reference System
 days_fire_proj = projectRaster(days_fire, crs = crs(idx_hNDVI))
 
-#Creating an extent to crop to. This is the extent of the idx_out_NDVI data set since it is the smallest data set.
+#Creating an extent to crop to. This is the extent of the idx_hNDVI data set since it is the smallest data set.
 e = extent(idx_hNDVI)
 
 #Cropping the vegmap_proj and the days_fire_proj
 fire_crop = crop(days_fire_proj, e)
+```
+Map of the Days Since Fire data crop.
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+mapview(fire_crop)
 ```
 Reprojecting the vegmap data set to match the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent. Finally, converting it to an sp object to be better used with the raster objects.
 ```{r warning=FALSE}
@@ -86,12 +95,29 @@ vegmap_proj = st_transform(vegmap, crs = crs(idx_hNDVI))
 #Cropping the vegmap data to the study area
 vegmap_crop = st_crop(vegmap_proj, e)
 
+#Selecting the Peninsula Sandstone Fynbos
+Fynbos_sf = vegmap_crop %>%
+  filter(Name_18 == "Peninsula Sandstone Fynbos")
+
 #Converting vegmap to an sp object
-vegmap_sp = as(vegmap_crop, "Spatial")
+Fynbos_sp = as(Fynbos_sf, "Spatial") #may not need
 ```
-Test for extracting the data
+Map of the Peninsula Fynbos Sandstone.
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+mapview(Fynbos_sf)
+```
+Clipping the fire_crop and the idx_hNDVI to only the regions of the Fynbos_sp.
 ```{r}
-ext1 = pr_extract_spectra(file_var[2], vegmap_crop, id_field = "field_id")
+#fynbos_geom = Fynbos_sf %>%
+#  dplyr::select(geometry) %>%
+#  as("Spatial")
+#fynbos_e = extent(bbox(fynbos_geom))
+
+#fire_fynbos = crop(fire_crop, fynbos_e)
+
+hNDVI_fynbos = st_crop(idx_hNDVI, Fynbos_sf)
+
+#cropped to  the extent of the file not the shape
 ```
 
 # Results
