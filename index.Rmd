@@ -4,11 +4,11 @@ author: Willow Flood
 date: Fall 2022 Semester
 ---
 
-# Introduction
+# Introduction 
 
 The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the reflectance is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral reflectance data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's reflectance changes due to a change in the composition of the ecosystem. (Need to bulk this section up to get to 200 words)  
 
-# Materials and methods
+# Materials and methods 
 
 The data being used for this project come from a variety of sources. The hyperspectral data comes from the PRISMA Satellite. It captures the Greater Cape Floristic Region on 2022/01/22. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
 
@@ -114,7 +114,7 @@ hNDVI_fynbos = st_crop(idx_hNDVI, Fynbos_sf, crop = TRUE)
 Current working plan. Spatially join the hNDVI_fynbos and fire_fynbos so that values can be graphed.
 
 
-# Results
+# Results 
 
 [~200 words]
 
@@ -126,7 +126,7 @@ Show tables, plots, etc. and describe them.
 
 ```
 
-# Conclusions
+# Conclusions 
 
 [~200 words]
 
