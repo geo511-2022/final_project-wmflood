@@ -6,7 +6,7 @@ date: Fall 2022 Semester
 
 # Introduction
 
-The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the reflectance is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral reflectance data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's reflectance changes due to a change in the composition of the ecosystem. (Need to bulk this section up to get to 200 words)  
+The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the Normalized Difference Vegetation Index (NDVI) is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral NDVI data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's NDVI changes due to a change in the composition of the ecosystem after a wildfire. (Need to bulk this section up to get to 200 words)  
 
 # Materials and methods
 
@@ -112,7 +112,11 @@ fire_fynbos = st_crop(fire_crop, Fynbos_sf, crop = TRUE)
 hNDVI_fynbos = st_crop(idx_hNDVI, Fynbos_sf, crop = TRUE)
 ```
 Current working plan. Spatially join the hNDVI_fynbos and fire_fynbos so that values can be graphed.
+```{r}
+st_as_sf(fire_fynbos, na.rm = TRUE, merge = TRUE)
 
+#hndvi_fire = stars::st_join(hNDVI_fynbos, st_as_sf(fire_fynbos, na.rm = TRUE, merge = TRUE), )
+```
 
 # Results
 
@@ -134,4 +138,4 @@ Clear summary adequately describing the results and putting them in context. Dis
 
 # References
 
-All sources are cited in a consistent manner
+Busetto, L., Ranghetti, L. (2020) prismaread: A tool for facilitating access and analysis of PRISMA L1/L2 hyperspectral imagery v1.0.0, URL: https://irea-cnr-mi.github.io/prismaread/, doi: https://doi.org/10.5281/zenodo.4019081
