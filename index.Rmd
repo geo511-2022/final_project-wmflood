@@ -10,7 +10,7 @@ The problem being addressed in this project is looking at the Peninsula Sandston
 
 # Materials and methods
 
-The data being used for this project come from a variety of sources. The hyperspectral data comes from the PRISMA Satellite. It captures the Greater Cape Floristic Region on 2022/01/22. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
+The data being used for this project came from a variety of sources. The hyperspectral data comes from the PRISMA Satellite project. The data captures the Greater Cape Floristic Region on 2022/01/22 since it was a relativly clear day and it is the closest date to the time since fire data. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
 
 These are the libraries that were used in this project. (need to edit this)
 ```{r warning=FALSE, message=FALSE}
@@ -82,10 +82,6 @@ days_fire_proj = st_transform(days_fire, crs = st_crs(idx_hNDVI))
 #Cropping the vegmap_proj and the days_fire_proj
 fire_crop = st_crop(days_fire_proj, idx_hNDVI, crop = TRUE)
 ```
-Map of the Days Since Fire data crop.
-```{r echo=FALSE,warning=FALSE,message=FALSE}
-mapview(fire_crop)
-```
 Reprojecting the vegmap data set to match the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent. Finally, converting it to an sp object to be better used with the raster objects.
 ```{r warning=FALSE}
 #Reprojecting the vegmap data
@@ -113,9 +109,13 @@ hNDVI_fynbos = st_crop(idx_hNDVI, Fynbos_sf, crop = TRUE)
 ```
 Current working plan. Spatially join the hNDVI_fynbos and fire_fynbos so that values can be graphed.
 ```{r}
-st_as_sf(fire_fynbos, na.rm = TRUE, merge = TRUE)
+#fire_fynbos_sf = st_as_sf(fire_fynbos, as_points = TRUE, na.rm = TRUE)
 
-#hndvi_fire = stars::st_join(hNDVI_fynbos, st_as_sf(fire_fynbos, na.rm = TRUE, merge = TRUE), )
+hndvi_fire = st_join(hNDVI_fynbos, fire_fynbos_sf, join = st_intersects, what = "left1", as_points = TRUE)
+```
+Coercing the stars object to a raster object. This is being done for several reasons. The first is that stars objects were easier to use and manipulate early on with the data sets. Doing the same with raster objects would have been more complicated and time consuming. The second reason to convert to a raster object now is that it is easier to make a dataframe for the next step from a raster than a stars object.
+```{r}
+hndvi_df = as.data.frame(hndvi_fire, center = TRUE)
 ```
 
 # Results
@@ -127,7 +127,8 @@ Tables and figures (maps and other graphics) are carefully planned to convey the
 Show tables, plots, etc. and describe them.
 
 ```{r}
-
+ggplot(hndvi_fire, aes(x=x, y=y)) +
+  geom_line()
 ```
 
 # Conclusions
