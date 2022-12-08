@@ -26,7 +26,7 @@ library(mapview)
 library(stars)
 library(FNN)
 ```
-These are the days since fire and vegetation map data sets that were used for this project.
+These are the days since fire and vegetation map data sets that were used for this project. Using the package piggyback, data was collected from GitHub repositories.
 ```{r message=FALSE, warning=FALSE}
 dir.create("data", showWarnings = F)
 piggyback::pb_download(
@@ -42,7 +42,7 @@ piggyback::pb_download(
   dest = "data")
 vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp")
 ```
-This is the PRISMA satellite data used in this project.
+This is the PRISMA satellite data used in this project. The data was downloaded from GitHub using the piggyback method, and the data was read using the prismaread package. The raster data for this and the time since fire data is also read in using the stars package. The stars package was used instead of raster because of it's ability to interface with sf data. Since the SANBI vegetation coverage map is read in as sf, stars was the more compatible choice.
 ```{r message=FALSE, warning=FALSE}
 piggyback::pb_download(
   "PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip",
@@ -62,9 +62,8 @@ pr_convert(
   indexes = "hNDVI",
   overwrite = TRUE
 )
-
 ```
-Reading the PRISMA data. This step is reading the hyperspectral NDVI for the project.
+Reading the PRISMA data. In order to to read the PRISMA data from the idx_out_dir the variable file_var was created. This is then used to access the specific file path for the hyperspectral NDVI that was processed.
 ```{r}
 file_var = list.files(idx_out_dir, full.names = TRUE)
 
@@ -74,15 +73,15 @@ Map of the Hyperspectral NDVI.
 ```{r echo=FALSE,warning=FALSE,message=FALSE}
 mapview(idx_hNDVI, maxpixels = 154295)
 ```
-Converting the days_fire data to the same crs as the idx_hNDVI and cropping it to the same area.
+Reprojecting the days_fire data to the same crs as the idx_hNDVI and cropping it to the same area.
 ```{r warning=FALSE}
 #Converting the days_fire data to the same Coordinate Reference System
 days_fire_proj = st_transform(days_fire, crs = st_crs(idx_hNDVI))
 
-#Cropping the vegmap_proj and the days_fire_proj
+#Cropping the days_fire_proj
 fire_crop = st_crop(days_fire_proj, idx_hNDVI, crop = TRUE)
 ```
-Reprojecting the vegmap data set to match the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent. Finally, converting it to an sp object to be better used with the raster objects.
+Reprojecting the vegmap data set to the same crs as the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent.
 ```{r warning=FALSE}
 #Reprojecting the vegmap data
 vegmap_proj = st_transform(vegmap, crs = st_crs(idx_hNDVI))
@@ -93,29 +92,22 @@ vegmap_crop = st_crop(vegmap_proj, idx_hNDVI)
 #Selecting the Peninsula Sandstone Fynbos
 Fynbos_sf = vegmap_crop %>%
   filter(Name_18 == "Peninsula Sandstone Fynbos")
-
-#Converting vegmap to an sp object
-Fynbos_sp = as(Fynbos_sf, "Spatial") #may not need
 ```
 Map of the Peninsula Fynbos Sandstone.
 ```{r echo=FALSE,warning=FALSE,message=FALSE}
 mapview(Fynbos_sf)
 ```
-Cropping the fire_crop and the idx_hNDVI to only the regions of the Fynbos_sf.
+The next step is cropping the fire_crop and the idx_hNDVI to only the regions of the Fynbos_sf.
 ```{r warning=FALSE}
 fire_fynbos = st_crop(fire_crop, Fynbos_sf, crop = TRUE)
 
 hNDVI_fynbos = st_crop(idx_hNDVI, Fynbos_sf, crop = TRUE)
 ```
-Current working plan. Spatially join the hNDVI_fynbos and fire_fynbos so that values can be graphed.
+Because the two stars objects fire_fynbos and hNDVI_fynbos have different spatial resolutions, the two objects can't be merged. This leaves conducting a spatial join of the two objects.
 ```{r}
-#fire_fynbos_sf = st_as_sf(fire_fynbos, as_points = TRUE, na.rm = TRUE)
-
-hndvi_fire = st_join(hNDVI_fynbos, fire_fynbos_sf, join = st_intersects, what = "left1", as_points = TRUE)
-```
-Coercing the stars object to a raster object. This is being done for several reasons. The first is that stars objects were easier to use and manipulate early on with the data sets. Doing the same with raster objects would have been more complicated and time consuming. The second reason to convert to a raster object now is that it is easier to make a dataframe for the next step from a raster than a stars object.
-```{r}
-hndvi_df = as.data.frame(hndvi_fire, center = TRUE)
+fire_fynbos_sf = st_as_sf(fire_fynbos, as_points = FALSE, na.rm = TRUE)
+hndvi_fynbos_sf = st_as_sf(hNDVI_fynbos, as_points = TRUE, na.rm = TRUE)
+hndvi_fire = st_join(fire_fynbos_sf, hndvi_fynbos_sf, join = st_nearest_feature, left = TRUE)
 ```
 
 # Results
@@ -127,7 +119,7 @@ Tables and figures (maps and other graphics) are carefully planned to convey the
 Show tables, plots, etc. and describe them.
 
 ```{r}
-ggplot(hndvi_fire, aes(x=x, y=y)) +
+ggplot(hndvi_fire, aes(x=hndvi_fire$`2022_01_17.tif`, y=hndvi_fire$PRS_L2D_STD_20220122090206_20220122090210_0001_hNDVI.tif)) +
   geom_line()
 ```
 
