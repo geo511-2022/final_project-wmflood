@@ -109,25 +109,25 @@ fire_fynbos_sf = st_as_sf(fire_fynbos, as_points = FALSE, na.rm = TRUE)
 hndvi_fynbos_sf = st_as_sf(hNDVI_fynbos, as_points = TRUE, na.rm = TRUE)
 hndvi_fire = st_join(fire_fynbos_sf, hndvi_fynbos_sf, join = st_nearest_feature, left = TRUE)
 ```
-
+Below is a map of the fire_fynbos_sf layer. Each polygon represents the number of days since the last fire.
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+mapview(fire_fynbos_sf)
+```
 # Results
 
-[~200 words]
-
-Tables and figures (maps and other graphics) are carefully planned to convey the results of your analysis. Intense exploration and evidence of many trials and failures. The author looked at the data in many different ways before coming to the final presentation of the data.
-
-Show tables, plots, etc. and describe them.
-
-```{r}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(hndvi_fire, aes(x=hndvi_fire$`2022_01_17.tif`, y=hndvi_fire$PRS_L2D_STD_20220122090206_20220122090210_0001_hNDVI.tif)) +
   geom_line()
 ```
+The graph above shows the variation of the hyperspectral NDVI over time. The time scale is the number of days since the last fire. For this region the longest time since fire came out to just over 7000 days from the collection of the data.
+Based on the results of the graph above there are several different things going on with the NDVI. The first is that there were far fewer points drawn from for the longer time since fire data. Once you get over 4000 days since fire there are three primary groupings. Under 4000 days without fire there are eight groupings of data points.This is likely due to the common occurrence of wildfire in the area. This leads to less time since fire and more data points to collect from in these areas.
+Looking at the two groupings of data on the graph the above 4000 days have much more consistent NDVI values than the below 4000 days. This is likely due to several factors. The first being that the below 4000 days group is subject to pioneer species that move in soon after the fire. These species are relatively short lived, but they likely crowd out what would be the more established species that take a longer time to propagate. The other factor is the location of the data point. Other influences in the area may also play an effect on the NDVI value.
 
 # Conclusions
 
-[~200 words]
-
 Clear summary adequately describing the results and putting them in context. Discussion of further questions and ways to continue investigation.
+Based on the results of this study there are two general groupings of data that can be talked about. The first is the below 4000 days since fire group. This group is defined by the large number of data points that come out of it, and the relatively inconsistent NDVI scores. The second group is the above 4000 days group. This group has fewer points, but more consistent NDVI values. This difference is likely due to the difference in plant species that inhabit the spaces during different times since fire.
+There are several things that need to be further investigated with this data, and that will be covered in future research. The first is that human activity in the region needs to be accounted for. Human activity will interfere with reflectance values, and that has the possibility of skewing the data. It was not covered during this study due to size of data and time. Another factor that should be looked at is just the overall reflectance of the different time since fire areas. This would give a better explanation of what is going on in each area, and identifying things like human activity or bare soil would be easier to see and determine. Overall this is a rich data set to work with, so there are plenty of things to investigate.
 
 # References
 
