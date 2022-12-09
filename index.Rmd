@@ -10,15 +10,12 @@ The problem being addressed in this project is looking at the Peninsula Sandston
 
 # Materials and methods
 
-The data being used for this project came from a variety of sources. The hyperspectral data comes from the PRISMA Satellite project. The data captures the Greater Cape Floristic Region on 2022/01/22 since it was a relativly clear day and it is the closest date to the time since fire data. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
+The data being used for this project came from a variety of sources. The hyperspectral data comes from the PRISMA Satellite project. The data captures the Greater Cape Floristic Region on 2022/01/22 since it was a relatively clear day and it is the closest date to the time since fire data. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
 
-These are the libraries that were used in this project. (need to edit this)
+These are the libraries that were used in this project.
 ```{r warning=FALSE, message=FALSE}
 library(ggplot2)
 library(dplyr)
-library(raster)
-library(rgdal)
-library(plyr)
 library(piggyback)
 library(prismaread)
 library(sf)
@@ -42,7 +39,7 @@ piggyback::pb_download(
   dest = "data")
 vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp")
 ```
-This is the PRISMA satellite data used in this project. The data was downloaded from GitHub using the piggyback method, and the data was read using the prismaread package. The raster data for this and the time since fire data is also read in using the stars package. The stars package was used instead of raster because of it's ability to interface with sf data. Since the SANBI vegetation coverage map is read in as sf, stars was the more compatible choice.
+This is the PRISMA satellite data used in this project. The data was downloaded from GitHub using the piggyback method, and the data was read using the prismaread package. The raster data for this and the time since fire data is also read in using the stars package. The stars package was used instead of raster because of its ability to interface with sf data. Since the SANBI vegetation coverage map is read in as sf, stars was the more compatible choice.
 ```{r message=FALSE, warning=FALSE}
 piggyback::pb_download(
   "PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip",
@@ -63,7 +60,7 @@ pr_convert(
   overwrite = TRUE
 )
 ```
-Reading the PRISMA data. In order to to read the PRISMA data from the idx_out_dir the variable file_var was created. This is then used to access the specific file path for the hyperspectral NDVI that was processed.
+Reading the PRISMA data. In order to read the PRISMA data from the idx_out_dir the variable file_var was created. This is then used to access the specified file path for the hyperspectral NDVI that was processed.
 ```{r}
 file_var = list.files(idx_out_dir, full.names = TRUE)
 
@@ -81,7 +78,7 @@ days_fire_proj = st_transform(days_fire, crs = st_crs(idx_hNDVI))
 #Cropping the days_fire_proj
 fire_crop = st_crop(days_fire_proj, idx_hNDVI, crop = TRUE)
 ```
-Reprojecting the vegmap data set to the same crs as the idx_out_NDVI. Then cropping the vegmap data sets to the the same extent.
+Reprojecting the vegmap data set to the same crs as the idx_out_NDVI. Then cropping the vegmap data sets to the same extent.
 ```{r warning=FALSE}
 #Reprojecting the vegmap data
 vegmap_proj = st_transform(vegmap, crs = st_crs(idx_hNDVI))
