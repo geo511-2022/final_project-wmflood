@@ -1,16 +1,16 @@
 ---
-title: "Hyperspectral analysis in the Greater Cape Floristic Region of South Africa"
+title: "Hyperspectral NDVI analysis in the Greater Cape Floristic Region of South Africa"
 author: Willow Flood
 date: Fall 2022 Semester
 ---
 
 # Introduction
 
-The problem being addressed in this project is looking at the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region and how the Normalized Difference Vegetation Index (NDVI) is affected by wildfires. This will be done by comparing the time since fire data and hyperspectral NDVI data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's NDVI changes due to a change in the composition of the ecosystem after a wildfire. (Need to bulk this section up to get to 200 words)  
+The problem being addressed in this project is looking at the recovery of ecosystems after wildfire. The study region is the Peninsula Sandstone Fynbos ecosystem in the Southwest Fynbos Bioregion in the Greater Cape Floristic Region in South Africa. This study uses the Normalized Difference Vegetation Index (NDVI) of the region to understand how the region is recovering post-wildfire. Ecosystems are shown to have different vegetation composition post-wildfire (Goetz, 2006; Heath, 2016), and this can be detected using NDVI. This means that as a region recovers from a wildfire there are going to be differing NDVI values. NDVI values tend to be lower in the immediate years post fire (Lee, 2015). Ecosystems response time to recovering from wildfire varies depending on the ecosystem (Hicke, 2003; Lee, 2015). The time just after a fire is going to have variable NDVI values. In previous studies multispectral NDVI was collected (Goetz, 2006; Heath, 2016; Hicke, 2003; Lee, 2015). This study will use hyperspectral NDVI to get more accurate NDVI values, and advance the response recovery of post-wildfire ecosystems. This will be done by comparing the time since fire data and hyperspectral NDVI data to see what differences there are at different times since the fire occurred. This will help to show how this ecosystem's NDVI changes due to a change in the composition of the ecosystem after a wildfire.  
 
 # Materials and methods
 
-The data being used for this project came from a variety of sources. The hyperspectral data comes from the PRISMA Satellite project. The data captures the Greater Cape Floristic Region on 2022/01/22 since it was a relatively clear day and it is the closest date to the time since fire data. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
+The data being used for this project came from a variety of sources. The hyperspectral data comes from the PRISMA Satellite project. The data captures the Greater Cape Floristic Region on 2022/01/22 since it was a relatively clear day and it is the closest capture date to the time since fire data. The time since fire data is taken from the AdamWilsonLab emma_envdata repository on GitHub. The date of the time since fire data is 2022/01/17. The ecosystem data was collected from the South African National Biodiversity Institute (SANBI) 2018 National Vegetation Map Project (VEGMAP). 
 
 These are the libraries that were used in this project.
 ```{r warning=FALSE, message=FALSE}
@@ -23,23 +23,23 @@ library(mapview)
 library(stars)
 library(FNN)
 ```
-These are the days since fire and vegetation map data sets that were used for this project. Using the package piggyback, data was collected from GitHub repositories.
+These are the days since fire and vegetation map data sets that were used for this project. Using the package piggyback, data was obtained from GitHub repositories.
 ```{r message=FALSE, warning=FALSE}
-dir.create("data", showWarnings = F)
+dir.create("data", showWarnings = F) #Creating a directory to download the data to
 piggyback::pb_download(
-  "2022_01_17.tif",
-  repo = "AdamWilsonLab/emma_envdata",
-  tag = "processed_ndvi_relative_days_since_fire",
-  dest = "data")
-days_fire = read_stars("data/2022_01_17.tif")
+  "2022_01_17.tif", #Name of the file
+  repo = "AdamWilsonLab/emma_envdata", #the name of the repository that I'm pulling from
+  tag = "processed_ndvi_relative_days_since_fire", #using the tag is important to pull from the right repository, especially if the user has multiple repositories
+  dest = "data") #The file destination directory just created
+days_fire = read_stars("data/2022_01_17.tif") #reading using the stars package
 
 piggyback::pb_download(
   repo = "geo511-2022/final_project-wmflood",
   tag = "VEGMAP",
   dest = "data")
-vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp")
+vegmap = st_read("data/NVM2018_AEA_V22_7_16082019_final.shp") #read using the sf package
 ```
-This is the PRISMA satellite data used in this project. The data was downloaded from GitHub using the piggyback method, and the data was read using the prismaread package. The raster data for this and the time since fire data is also read in using the stars package. The stars package was used instead of raster because of its ability to interface with sf data. Since the SANBI vegetation coverage map is read in as sf, stars was the more compatible choice.
+This is the PRISMA satellite data used in this project. The data was downloaded from GitHub using the piggyback method, and the data was read using the prismaread package. 
 ```{r message=FALSE, warning=FALSE}
 piggyback::pb_download(
   "PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip",
@@ -47,38 +47,38 @@ piggyback::pb_download(
   tag = "PRISMA",
   dest = "data")
 
-l2d_zip_path = file.path("data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip")
-unzip(l2d_zip_path, exdir = "data")
+l2d_zip_path = file.path("data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5.zip") #Because of the size of the file it is zipped in the repository
+unzip(l2d_zip_path, exdir = "data") #The file needs to be unzipped before it can be used
 
-idx_out_dir = file.path(tempdir(), "prismaread/indices")
+idx_out_dir = file.path(tempdir(), "prismaread/indices") #This is creating a temp directory to read the PRISMA data into
 dir.create(dirname(idx_out_dir))
-pr_convert(
+pr_convert( #This is a function from the prismaread package that lets you read the PRISMA data as either a GeoTiff or Envi file.
   in_file = "data/PRS_L2D_STD_20220122090206_20220122090210_0001.he5",
-  out_format = "GTiff",
+  out_format = "GTiff", #For this project GeoTiff is used
   out_folder = idx_out_dir,
-  indexes = "hNDVI",
+  indexes = "hNDVI", #This allows you to choose what data is read and converted from the PRISMA data. For this project hyperspectral NDVI is selected from the PRISMA data.
   overwrite = TRUE
 )
 ```
-Reading the PRISMA data. In order to read the PRISMA data from the idx_out_dir the variable file_var was created. This is then used to access the specified file path for the hyperspectral NDVI that was processed.
+In order to read the PRISMA data from the idx_out_dir the variable file_var was created. This is then used to access the specified file path for the hyperspectral NDVI that was processed. The PRISMA and time since fire data are read in using the stars package. The stars package was used to interface better with sf objects. This was chosen for ease of use in later steps of this project.
 ```{r}
 file_var = list.files(idx_out_dir, full.names = TRUE)
 
-idx_hNDVI = read_stars(file_var[2]) 
+idx_hNDVI = read_stars(file_var[2]) #The PRISMA data is read using the stars package
 ```
 Map of the Hyperspectral NDVI.
 ```{r echo=FALSE,warning=FALSE,message=FALSE}
 mapview(idx_hNDVI, maxpixels = 154295)
 ```
-Reprojecting the days_fire data to the same crs as the idx_hNDVI and cropping it to the same area.
+Re-projecting the days_fire data to the same coordinate reference system (crs) as the idx_hNDVI and cropping it to the same area. The re-projection needs to happen first so that the object is on the same system as the extent object that it's being cropped to.
 ```{r warning=FALSE}
-#Converting the days_fire data to the same Coordinate Reference System
+#Reprojecting the days_fire data to the same crs
 days_fire_proj = st_transform(days_fire, crs = st_crs(idx_hNDVI))
 
 #Cropping the days_fire_proj
 fire_crop = st_crop(days_fire_proj, idx_hNDVI, crop = TRUE)
 ```
-Reprojecting the vegmap data set to the same crs as the idx_out_NDVI. Then cropping the vegmap data sets to the same extent.
+Re-projecting the vegmap data set to the same crs as the idx_out_NDVI. Then cropping the vegmap data sets to the same extent.
 ```{r warning=FALSE}
 #Reprojecting the vegmap data
 vegmap_proj = st_transform(vegmap, crs = st_crs(idx_hNDVI))
@@ -100,7 +100,7 @@ fire_fynbos = st_crop(fire_crop, Fynbos_sf, crop = TRUE)
 
 hNDVI_fynbos = st_crop(idx_hNDVI, Fynbos_sf, crop = TRUE)
 ```
-Because the two stars objects fire_fynbos and hNDVI_fynbos have different spatial resolutions, the two objects can't be merged. This leaves conducting a spatial join of the two objects.
+Because the two stars objects (fire_fynbos and hNDVI_fynbos) have different spatial resolutions, the two objects can't be merged. The easiest way to extract the data then is to conduct a spatial join on the two objects. The objects are converted to sf objects as well to more readily extract the data to graph later.
 ```{r}
 fire_fynbos_sf = st_as_sf(fire_fynbos, as_points = FALSE, na.rm = TRUE)
 hndvi_fynbos_sf = st_as_sf(hNDVI_fynbos, as_points = TRUE, na.rm = TRUE)
@@ -114,18 +114,38 @@ mapview(fire_fynbos_sf)
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(hndvi_fire, aes(x=hndvi_fire$`2022_01_17.tif`, y=hndvi_fire$PRS_L2D_STD_20220122090206_20220122090210_0001_hNDVI.tif)) +
-  geom_line()
+  geom_line() +
+  geom_smooth(n = 2000, span = 0.6) +
+  labs(title = "Hyperspectral NDVI Over Time",
+       x = "Days Since Fire",
+       y = "hNDVI Value",
+       caption = "Derived from PRISMA Satellite data")
 ```
-The graph above shows the variation of the hyperspectral NDVI over time. The time scale is the number of days since the last fire. For this region the longest time since fire came out to just over 7000 days from the collection of the data.
-Based on the results of the graph above there are several different things going on with the NDVI. The first is that there were far fewer points drawn from for the longer time since fire data. Once you get over 4000 days since fire there are three primary groupings. Under 4000 days without fire there are eight groupings of data points.This is likely due to the common occurrence of wildfire in the area. This leads to less time since fire and more data points to collect from in these areas.
-Looking at the two groupings of data on the graph the above 4000 days have much more consistent NDVI values than the below 4000 days. This is likely due to several factors. The first being that the below 4000 days group is subject to pioneer species that move in soon after the fire. These species are relatively short lived, but they likely crowd out what would be the more established species that take a longer time to propagate. The other factor is the location of the data point. Other influences in the area may also play an effect on the NDVI value.
+
+The graph above shows the variation of the hyperspectral NDVI over time. For this region the longest time since fire was over 7000 days from the collection of the data. Based on the results of the graph above there are several different factors affecting the NDVI. The first is that there were far fewer points drawn from for the longer time since fire data. Once you get over 4000 days since fire there are three primary groupings. Under 4000 days without fire there are eight groupings of data points.This is due to the common occurrence of wildfire in the area. This leads to less time since fire and more data points to collect from in these areas. Looking at the two groupings of data on the graph the above 4000 days have much more consistent NDVI values than the below 4000 days. This is likely due to several factors. The first being that the below 4000 days group is subject to pioneer species that move in soon after the fire and change the composition of the region (Goetz, 2006; Heath, 2016). These species are relatively short lived, but they likely crowd out what would be the more established species that take a longer time to propagate. This has the potential to change the NDVI by increasing the temporary vegetation coverage. The other factor is the location of the data point. Other influences in the area may also play an effect on the NDVI value.
 
 # Conclusions
 
-Clear summary adequately describing the results and putting them in context. Discussion of further questions and ways to continue investigation.
-Based on the results of this study there are two general groupings of data that can be talked about. The first is the below 4000 days since fire group. This group is defined by the large number of data points that come out of it, and the relatively inconsistent NDVI scores. The second group is the above 4000 days group. This group has fewer points, but more consistent NDVI values. This difference is likely due to the difference in plant species that inhabit the spaces during different times since fire.
-There are several things that need to be further investigated with this data, and that will be covered in future research. The first is that human activity in the region needs to be accounted for. Human activity will interfere with reflectance values, and that has the possibility of skewing the data. It was not covered during this study due to size of data and time. Another factor that should be looked at is just the overall reflectance of the different time since fire areas. This would give a better explanation of what is going on in each area, and identifying things like human activity or bare soil would be easier to see and determine. Overall this is a rich data set to work with, so there are plenty of things to investigate.
+Based on the results of this study there are two general groupings of data that can be talked about. The first is the below 4000 days since fire group. This group is defined by the large number of data points that come out of it, and the relatively inconsistent NDVI scores. The second group is the above 4000 days group. This group has fewer points, but more consistent NDVI values. This difference is likely due to the difference in vegetation composition that inhabit the space during different times since fire. There are several things that need to be further investigated with this data, and that will be covered in future research. The first is that human activity in the region needs to be accounted for. Human activity will interfere with reflectance values, and that has the possibility of skewing the data. It was not covered during this study due to size of data and time. Another factor that should be looked at is just the overall reflectance of the different time since fire areas. This would give a better explanation of the vegetation composition in each area, and identifying things like human activity or bare soil would be easier to see and determine. Overall this is a rich data set to work with, so there are plenty of things to investigate.
 
 # References
 
 Busetto, L., Ranghetti, L. (2020) prismaread: A tool for facilitating access and analysis of PRISMA L1/L2 hyperspectral imagery v1.0.0, URL: https://irea-cnr-mi.github.io/prismaread/, doi: https://doi.org/10.5281/zenodo.4019081
+
+Goetz, S. J., Fiske, G. J., & Bunn, A. G. (2006). Using satellite time-series data sets to analyze fire disturbance and forest recovery across Canada. Remote Sensing of Environment, 101(3), 352-365.
+
+Hicke, J. A., Asner, G. P., Kasischke, E. S., French, N. H., Randerson, J. T., James Collatz, G., ... & Field, C. B. (2003). Postfire response of North American boreal forest net primary productivity analyzed with satellite observations. Global Change Biology, 9(8), 1145-1157.
+
+Heath, J. T., Chafer, C. J., Bishop, T. F., & Van Ogtrop, F. F. (2016). Post-fire recovery of eucalypt-dominated vegetation communities in the Sydney Basin, Australia. Fire Ecology, 12(3), 53-79.
+
+Lee, R. J., & Chow, T. E. (2015). Post-wildfire assessment of vegetation regeneration in Bastrop, Texas, using Landsat imagery. GIScience & Remote Sensing, 52(5), 609-626.
+
+Artan, H. Y. S. A., & Spalevic, V. (2020). Testing NDVI, tree cover density and land cover type as fuel indicators in the wildfire spread capacity index (WSCI): case of Montenegro. Notulae Botanicae Horti Agrobotanici Cluj-Napoca, 48(4), 2368-2384.
+
+Ba, R., Song, W., Lovallo, M., Zhang, H., & Telesca, L. (2022). Informational analysis of MODIS NDVI and EVI time series of sites affected and unaffected by wildfires. Physica A: Statistical Mechanics and its Applications, 604, 127911.
+
+CUEVAS‐GONZÁLEZ, M. A. R. Í. A., Gerard, F., Balzter, H., & Riano, D. (2009). Analysing forest recovery after wildfire disturbance in boreal Siberia using remotely sensed vegetation indices. Global Change Biology, 15(3), 561-577.
+
+Van Leeuwen, W. J., Casady, G. M., Neary, D. G., Bautista, S., Alloza, J. A., Carmel, Y., ... & Orr, B. J. (2010). Monitoring post-wildfire vegetation response with remotely sensed time-series data in Spain, USA and Israel. International Journal of Wildland Fire, 19(1), 75-93.
+
+Lehnert, L. W., Meyer, H., Obermeier, W. A., Silva, B., Regeling, B., & Bendix, J. (2019). Hyperspectral Data Analysis in R: The hsdar Package. Journal of Statistical Software, 89(12), 1–23. https://doi.org/10.18637/jss.v089.i12
