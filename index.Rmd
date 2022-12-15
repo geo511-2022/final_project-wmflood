@@ -72,23 +72,17 @@ mapview(idx_hNDVI, maxpixels = 154295)
 ```
 Re-projecting the days_fire data to the same coordinate reference system (crs) as the idx_hNDVI and cropping it to the same area. The re-projection needs to happen first so that the object is on the same system as the extent object that it's being cropped to.
 ```{r warning=FALSE}
-#Reprojecting the days_fire data to the same crs
-days_fire_proj = st_transform(days_fire, crs = st_crs(idx_hNDVI))
-
-#Cropping the days_fire_proj
-fire_crop = st_crop(days_fire_proj, idx_hNDVI, crop = TRUE)
+#Reprojecting the days_fire data to the same crs, and cropping the projection to the study region
+fire_crop = days_fire %>%
+  st_transform(crs = st_crs(idx_hNDVI)) %>%
+  st_crop(idx_hNDVI, crop = TRUE)
 ```
 Re-projecting the vegmap data set to the same crs as the idx_out_NDVI. Then cropping the vegmap data sets to the same extent.
 ```{r warning=FALSE}
-#Reprojecting the vegmap data
-vegmap_proj = st_transform(vegmap, crs = st_crs(idx_hNDVI))
-
-#Cropping the vegmap data to the study area
-vegmap_crop = st_crop(vegmap_proj, idx_hNDVI)
-
-#Selecting the Peninsula Sandstone Fynbos
-Fynbos_sf = vegmap_crop %>%
-  filter(Name_18 == "Peninsula Sandstone Fynbos")
+Fynbos_sf = vegmap %>%
+  st_transform(crs = st_crs(idx_hNDVI)) %>% #Reprojecting the vegmap data
+  st_crop(idx_hNDVI) %>% #Cropping the vegmap data to the study area
+  filter(Name_18 == "Peninsula Sandstone Fynbos")#Filtering to the Peninsula Sandstone Fynbos
 ```
 Map of the Peninsula Fynbos Sandstone.
 ```{r echo=FALSE,warning=FALSE,message=FALSE}
@@ -114,7 +108,7 @@ mapview(fire_fynbos_sf)
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(hndvi_fire, aes(x=hndvi_fire$`2022_01_17.tif`, y=hndvi_fire$PRS_L2D_STD_20220122090206_20220122090210_0001_hNDVI.tif)) +
-  geom_line() +
+  geom_count(alpha = 0.5) +
   geom_smooth(n = 2000, span = 0.6) +
   labs(title = "Hyperspectral NDVI Over Time",
        x = "Days Since Fire",
